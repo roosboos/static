@@ -24,7 +24,7 @@ class TestTextNode(unittest.TestCase):
         node2 = TextNode("oh yeah", TextType.BOLD)
         self.assertNotEqual(node, node2)
     
-class TestTextToTML(unittest.TestCase):
+class TestTextToHTML(unittest.TestCase):
     def test_text(self):
         node = TextNode("This is a text node", TextType.TEXT)
         html_node = text_node_to_html_node(node)
