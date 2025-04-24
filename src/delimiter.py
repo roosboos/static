@@ -52,3 +52,78 @@ def extract_markdown_images(text):
 def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        # Start with the remaining text to process
+        remaining_text = old_node.text
+
+        # Continue processing while an "image" markdown is found
+        while "!(" in remaining_text:
+            # Locate the image alt text
+            index_start = remaining_text.find("![")
+            start_alt = index_start + 2
+            end_alt = remaining_text.find("]", start_alt)
+            alt_text = remaining_text[start_alt:end_alt]
+
+            # Locate the image URL
+            start_url = remaining_text.find("(", end_alt) + 1
+            end_url = remaining_text.find(")", start_url)
+            url_text = remaining_text[start_url:end_url]
+
+            # Split the text into "before image" and "after image"
+            text_before = remaining_text[:index_start]
+            remaining_text = remaining_text[end_url + 1:]
+
+            # Append `text_before` as a TextNode (if there is text before)
+            if text_before:
+                new_nodes.append(TextNode(text_before, TextType.TEXT))
+
+            # Append the image as a TextNode
+            new_nodes.append(TextNode(alt_text, TextType.IMAGE, url_text))
+
+        # Append any remaining text as a TextNode (if it exists)
+        if remaining_text:
+            new_nodes.append(TextNode(remaining_text, TextType.TEXT))
+
+    return new_nodes
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+
+    for old_node in old_nodes:
+        # Start processing the node's text to extract links
+        remaining_text = old_node.text
+
+        while "[" in remaining_text:
+            # Find the start and end of the link text
+            index_start = remaining_text.find("[")
+            link_text_start = index_start + 1
+            link_text_end = remaining_text.find("]", link_text_start)
+            link_text = remaining_text[link_text_start:link_text_end]
+
+            # Find the start and end of the link URL
+            link_url_start = remaining_text.find("(", link_text_end) + 1
+            link_url_end = remaining_text.find(")", link_url_start)
+            link_url = remaining_text[link_url_start:link_url_end]
+
+            # Extract text before the link
+            text_before = remaining_text[:index_start]
+
+            # Extract remaining text after the link
+            remaining_text = remaining_text[link_url_end + 1:]
+
+            # Append 'text_before' (if not empty) as a TextNode
+            if text_before:
+                new_nodes.append(TextNode(text_before, TextType.TEXT))
+
+            # Append the extracted link as a TextNode
+            new_nodes.append(TextNode(link_text, TextType.LINK, link_url))
+
+        # Once no more links are found, append the leftover remaining text (if any)
+        if remaining_text:
+            new_nodes.append(TextNode(remaining_text, TextType.TEXT))
+
+    return new_nodes
+

@@ -3,13 +3,13 @@ from htmlnode import *
 from delimiter import *
 
 def main():
-    text = """Here's an image:
-    ![alt text](https://example.com/image.png)
-    And here's a link:
-    [Link Text](https://example.com)
-    """
-    print(extract_markdown_images(text))  # What do you expect here?
-    print(extract_markdown_links(text))
+    node = TextNode(
+        "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
+        TextType.TEXT,
+    )
+    new_nodes = split_nodes_link([node])
+
+    print(new_nodes)
 
 
 if __name__ == "__main__":
